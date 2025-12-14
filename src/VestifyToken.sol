@@ -19,7 +19,7 @@ contract VestifyToken is ERC20, Ownable {
 
     /**
      * @dev Only deployer can mint new tokens
-     * @param address Destination address for minted tokens
+     * @param account Destination address for minted tokens
      * @param value The amount of tokens to mint
      */
     function mint(address account, uint256 value) external onlyOwner {
@@ -28,7 +28,7 @@ contract VestifyToken is ERC20, Ownable {
 
     /**
      * @dev Only deployer can burn tokens
-     * @param address The address to destroy tokens from
+     * @param account The address to destroy tokens from
      * @param value The amount of tokens to destroy
      */
     function burn(address account, uint256 value) external onlyOwner {
