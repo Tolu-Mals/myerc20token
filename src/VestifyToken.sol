@@ -3,50 +3,35 @@
 pragma solidity ^0.8.20;
 
 import {ERC20} from "@openzeppelin/token/ERC20/ERC20.sol";
+import {Ownable} from "@openzeppelin/access/Ownable.sol";
 
-contract VestifyToken is ERC20 {
-    //Type Declarations
-
-    // State variables
-    address private _owner;
-    bytes32 private constant MINT_SELECTOR =
-        keccak256("_mint(address,uint256)");
-    bytes32 private constant BURN_SELECTOR =
-        keccak256("_burn(address,uint256)");
-
-    constructor(uint256 initialSupply) ERC20("Vestify", "VSF") {
-        _owner = msg.sender;
+/**
+ * @title Vestify token
+ * @notice ERC20 token with time-locked vesting support
+ * @dev Inherits from open zeppelin's ERC20 contract
+ */
+contract VestifyToken is ERC20, Ownable {
+    constructor(
+        uint256 initialSupply
+    ) ERC20("Vestify", "VSF") Ownable(msg.sender) {
         _mint(msg.sender, initialSupply);
     }
 
-    // Errors
-    error VestifyToken__OnlyOwnerCanBurn();
-    error VestifyToken__OnlyOwnerCanMint();
-
-    // Modifiers
-    modifier onlyOwner(bytes32 selector) {
-        if (msg.sender != _owner) {
-            if (selector == MINT_SELECTOR) {
-                revert VestifyToken__OnlyOwnerCanMint();
-            } else if (selector == BURN_SELECTOR) {
-                revert VestifyToken__OnlyOwnerCanBurn();
-            }
-        }
-
-        _;
+    /**
+     * @dev Only deployer can mint new tokens
+     * @param address Destination address for minted tokens
+     * @param value The amount of tokens to mint
+     */
+    function mint(address account, uint256 value) external onlyOwner {
+        _mint(account, value);
     }
 
-    function _mint(
-        address account,
-        uint256 value
-    ) internal virtual override onlyOwner(MINT_SELECTOR) {
-        super._mint(account, value);
-    }
-
-    function _burn(
-        address account,
-        uint256 value
-    ) internal virtual override onlyOwner(BURN_SELECTOR) {
-        super._burn(account, value);
+    /**
+     * @dev Only deployer can burn tokens
+     * @param address The address to destroy tokens from
+     * @param value The amount of tokens to destroy
+     */
+    function burn(address account, uint256 value) external onlyOwner {
+        _burn(account, value);
     }
 }
