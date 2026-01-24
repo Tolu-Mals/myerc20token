@@ -45,7 +45,12 @@ contract VestingContract is
     error VestingContract__AmountNotGreaterThanZero();
     error VestingContract__InvalidVestingPeriod();
     error VestingContract__InsufficientFunds();
+    error VestingContract__CliffPeriodNotReached();
     error VestingContract__BeneficiaryDoesNotExist();
+
+    //Events
+    event VestingScheduleCreated(address indexed beneficiary);
+    event WithdrawalCompleted(address indexed beneficiary);
 
     constructor() Ownable(msg.sender) {}
 
@@ -90,6 +95,8 @@ contract VestingContract is
 
         s_vestingScheduleList.push(newVestingSchedule);
         s_beneficiaryToVestingScheduleIndexPlusOne[beneficiary] = s_vestingScheduleList.length; //we index + 1 becuase default mapping value is 0
+
+        emit VestingScheduleCreated(beneficiary);
     }
 
     function checkUpkeep(
@@ -175,10 +182,8 @@ contract VestingContract is
     function withdrawFunds(uint256 amount) external {
         uint256 vestingScheduleIndexPlusOne = s_beneficiaryToVestingScheduleIndexPlusOne[msg.sender];
 
-        // 0 is an invalid index because we store index + 1
-        if(vestingScheduleIndexPlusOne == 0){
-            revert VestingContract__BeneficiaryDoesNotExist();                
-        }
+        if(vestingScheduleIndexPlusOne == 0) revert VestingContract__BeneficiaryDoesNotExist();                
+        if(s_vestingScheduleList[vestingScheduleIndexPlusOne - 1].cliffTimestamp > block.timestamp) revert VestingContract__CliffPeriodNotReached();
 
         uint256 amountAvailable = s_vestingScheduleList[vestingScheduleIndexPlusOne - 1].releasedAmount - s_vestingScheduleList[vestingScheduleIndexPlusOne - 1].withdrawnAmount;
 
@@ -190,5 +195,7 @@ contract VestingContract is
 
         // Transfer vestify tokens from this contract to beneficiary
         IERC20(address(0)).transferFrom(address(this), msg.sender, amount);
+        
+        emit WithdrawalCompleted(msg.sender);
     }
 }
