@@ -37,7 +37,7 @@ contract VestingContract is
     }
 
     // State variables
-    address private s_tokenContract;
+    address private immutable s_tokenContract;
     uint256 private s_tokenBalance;
     uint256 private s_nextIndexToProcess;
     uint256 private constant BATCH_SIZE = 10;
