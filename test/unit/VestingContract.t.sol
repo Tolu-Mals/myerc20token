@@ -7,15 +7,16 @@ import {VestifyToken} from "src/VestifyToken.sol";
 import {VestingContract} from "src/VestingContract.sol";
 
 contract VestingContractTest is Test {
-    function setUp() external {}
+    DeployVestingContract vestingContractDeployer;
+    VestingContract vestingContract;
+    VestifyToken vestifyToken;
 
-    function testThatCorrectTokenAddressIsStored() public {
-        DeployVestingContract vestingContractDeployer = new DeployVestingContract();
-        (
-            VestingContract vestingContract,
-            VestifyToken vestifyToken
-        ) = vestingContractDeployer.run();
+    function setUp() external {
+        vestingContractDeployer = new DeployVestingContract();
+        (vestingContract, vestifyToken) = vestingContractDeployer.run();
+    }
 
+    function testThatCorrectTokenAddressIsStored() public view {
         assert(
             vestingContract.getVestifyTokenContract() == address(vestifyToken)
         );
