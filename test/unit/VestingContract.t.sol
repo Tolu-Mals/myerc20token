@@ -52,13 +52,91 @@ contract VestingContractTest is Test {
     }
 
     function testThatRevertHappensWithInvalidStartDate() public {
-        vm.warp(10 days); // Move block timestamp forward so subtracting 1 day doesn't underflow
+        vm.warp(10 days);
         vm.roll(block.number + 5);
 
         vm.startPrank(DEFAULT_SENDER);
 
         uint256 startTimestamp = block.timestamp - (1 * 24 * 60 * 60); //start one day ago
         uint256 endTimestamp = block.timestamp + (14 * 24 * 60 * 60); //end 14 days from now
+        uint256 cliffTimestamp = block.timestamp + (4 * 24 * 60 * 60); //start 4 days from now
+        uint256 totalAmount = 50e18;
+
+        vestifyToken.approve(address(vestingContract), totalAmount);
+
+        vm.expectRevert(
+            VestingContract.VestingContract__InvalidVestingPeriod.selector
+        );
+        vestingContract.createVestingSchedule(
+            BENEFICIARY,
+            startTimestamp,
+            endTimestamp,
+            cliffTimestamp,
+            totalAmount
+        );
+        vm.stopPrank();
+    }
+
+    function testThatRevertHappensWithInvalidEndDate() public {
+        vm.warp(10 days);
+        vm.roll(block.number + 5);
+
+        vm.startPrank(DEFAULT_SENDER);
+
+        uint256 startTimestamp = block.timestamp - (1 * 24 * 60 * 60); //start one day ago
+        uint256 endTimestamp = block.timestamp; //end date is now
+        uint256 cliffTimestamp = block.timestamp + (4 * 24 * 60 * 60); //start 4 days from now
+        uint256 totalAmount = 50e18;
+
+        vestifyToken.approve(address(vestingContract), totalAmount);
+
+        vm.expectRevert(
+            VestingContract.VestingContract__InvalidVestingPeriod.selector
+        );
+        vestingContract.createVestingSchedule(
+            BENEFICIARY,
+            startTimestamp,
+            endTimestamp,
+            cliffTimestamp,
+            totalAmount
+        );
+        vm.stopPrank();
+    }
+
+    function testThatRevertHappensWithInvalidCliffDate() public {
+        vm.warp(10 days);
+        vm.roll(block.number + 5);
+
+        vm.startPrank(DEFAULT_SENDER);
+
+        uint256 startTimestamp = block.timestamp - (1 * 24 * 60 * 60); //start one day ago
+        uint256 endTimestamp = block.timestamp + (14 * 24 * 60 * 60); //end 14 days from now
+        uint256 cliffTimestamp = block.timestamp; //start now
+        uint256 totalAmount = 50e18;
+
+        vestifyToken.approve(address(vestingContract), totalAmount);
+
+        vm.expectRevert(
+            VestingContract.VestingContract__InvalidVestingPeriod.selector
+        );
+        vestingContract.createVestingSchedule(
+            BENEFICIARY,
+            startTimestamp,
+            endTimestamp,
+            cliffTimestamp,
+            totalAmount
+        );
+        vm.stopPrank();
+    }
+
+    function testThatRevertHappensWithInvalidVestingDuration() public {
+        vm.warp(10 days);
+        vm.roll(block.number + 5);
+
+        vm.startPrank(DEFAULT_SENDER);
+
+        uint256 startTimestamp = block.timestamp - (1 * 24 * 60 * 60); //start one day ago
+        uint256 endTimestamp = block.timestamp + (6 * 24 * 60 * 60); //end 6 days from now
         uint256 cliffTimestamp = block.timestamp + (4 * 24 * 60 * 60); //start 4 days from now
         uint256 totalAmount = 50e18;
 
