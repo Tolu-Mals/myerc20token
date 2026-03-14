@@ -58,6 +58,7 @@ contract VestingContract is
     //Events
     event VestingScheduleCreated(address indexed beneficiary);
     event WithdrawalCompleted(address indexed beneficiary);
+    event TokensReleased(address indexed beneficiary, uint256 amount);
 
     constructor(address tokenContract) Ownable(msg.sender) {
         s_tokenContract = tokenContract;
@@ -189,8 +190,7 @@ contract VestingContract is
 
             bool shouldProcessSchedule = (block.timestamp >
                 s_vestingScheduleList[index].lastTimestamp) &&
-                (block.timestamp -
-                    s_vestingScheduleList[index].lastTimestamp >
+                (block.timestamp - s_vestingScheduleList[index].lastTimestamp >
                     ONE_DAY_IN_SECONDS) &&
                 (s_vestingScheduleList[index].releasedAmount <
                     s_vestingScheduleList[index].totalAmount);
@@ -212,6 +212,11 @@ contract VestingContract is
 
             s_vestingScheduleList[index].releasedAmount += amountToRelease;
             s_vestingScheduleList[index].lastTimestamp = block.timestamp;
+
+            emit TokensReleased(
+                s_vestingScheduleList[index].beneficiaryAddress,
+                amountToRelease
+            );
         }
 
         uint256 lastProcessedIndex = idsToProcess[idsToProcess.length - 1];
